@@ -66,10 +66,9 @@ Shader "URP/water"
         {
             Tags{
                 "LightMode" ="UniversalForward"
-                "Queue" = "Transparent"
             }
             Blend SrcAlpha OneMinusSrcAlpha
-            ZWrite Off
+            ZWrite On
             HLSLPROGRAM
             #pragma vertex vert 
             #pragma fragment frag 
