@@ -2,7 +2,7 @@
     
     Properties{
         // 着色器输入
-        _MainTex("Main Texture", 2D) = "white"{}
+        [HideInInspector]_MainTex("Main Texture", 2D) = "white"{}
         _BaseColor("Base Color", Color) = (1, 1, 1, 1)
     }
     SubShader{
@@ -29,11 +29,21 @@
             Texture2D _MainTex;
             SAMPLER(sampler_MainTex);
 
+
+
+            
             Texture3D _DensityNoiseTex;
             SAMPLER(sampler_DensityNoiseTex);
+            Texture2D _Bluenoise;
+            SAMPLER(sampler_Bluenoise);
             float3 _DensityNoiseScale;
             float3 _DensityNoiseOffset;
+            float _DensityNoiseAllScale;
+            int _MaxRaymarchingcount;
+
+            
             float _Absorption;
+            float _LightAbsorption;
 
             float3 _BoundBoxMin;
             float3 _BoundBoxMax;
@@ -87,33 +97,39 @@
                 return float2(dstToBox, dstInsideBox);
             }
             float sampleDensity(float3 position){
-                float3 uvw = position * _DensityNoiseScale + _DensityNoiseOffset+float3(0,0,1)*_Time.x;
-                return SAMPLE_TEXTURE3D(_DensityNoiseTex,sampler_DensityNoiseTex ,uvw).r;
+                float3 uvw = position * _DensityNoiseScale*_DensityNoiseAllScale + _DensityNoiseOffset;
+                float blue = SAMPLE_TEXTURE2D(_Bluenoise,sampler_Bluenoise,uvw.xz);
+                return SAMPLE_TEXTURE3D(_DensityNoiseTex,sampler_DensityNoiseTex ,uvw).r*blue;
             }
             float GetCurrentPositionLum(float3 currentPos)
             {
                 float3 lightdir = normalize(_MainLightPosition);
                 float dstInsideBox = rayBoxDst(_BoundBoxMin, _BoundBoxMax, currentPos, lightdir).y;
+                //float dstInsideBox = RayCloudLayerDst(float3(0,0,0),6371,1500,4500,currentPos,lightdir);
                 float marchLength = 0;
                 float totalDensity = 0;
-                float marchNumber = 8;
+                float marchNumber = 20;
+
+                float l = dstInsideBox/marchNumber;//临时长度
                 for(int march =0;march<=marchNumber;march++)
                 {
-                    marchLength+=1;
+                    marchLength+=l;
                     float3 pos = currentPos-lightdir*marchLength;
                     if(marchLength>dstInsideBox)
                         break;
                     float density = sampleDensity(pos);
-                    totalDensity+=density;
+                    totalDensity+=density*l;
+                    
                     
                 }
-                return totalDensity;
+                float transmittance = BeerPowder(totalDensity,_LightAbsorption);
+                return transmittance;
             }
 
             
             half4 Pixel(vertexOutput  IN): SV_TARGET{
 
-                half4 albedo = _MainTex.Sample(sampler_MainTex, IN.uv);
+                half4 backColor = _MainTex.Sample(sampler_MainTex, IN.uv);
 
                 // 重建世界坐标
                 float3 worldPosition = GetWorldPosition(IN.pos);
@@ -123,16 +139,22 @@
 
                 
                 float2 rayBoxInfo = rayBoxDst(_BoundBoxMin, _BoundBoxMax, rayPosition, rayDir);
+                //float2 rayBoxInfo = RayCloudLayerDst(float3(0,0,0),6371,1500,4500,rayPosition,rayDir);
                 float dstToBox = rayBoxInfo.x;
                 float dstInsideBox = rayBoxInfo.y;
-                float marchingNumber = 8;
+                //float marchingNumber = 16;
                 float marchingLength = 0;
                 float totalLum=0;
                 float totalDensity = 0;
+                float transmittance =1;//光照衰减
+                float l = dstInsideBox/20;
+                float3 lightDir = normalize(_MainLightPosition);
+                //TODO:暴露参数
+                float phase = HenyeyGreenstein(dot(rayDir,lightDir),0);
                 float3 starpos = rayPosition+rayDir*dstToBox;
-                for(int march = 0;march<=marchingNumber;march++)
+                for(int march = 0;march<=20;march++)
                 {
-                    marchingLength+=1;
+                    marchingLength+=l;
                     float3 currentPos = starpos+rayDir*marchingLength;
                     if(marchingLength>dstInsideBox)
                         break;
@@ -140,13 +162,16 @@
                     if(density>0)
                     {
                         float lum = GetCurrentPositionLum(currentPos);
-                        lum*=density;
-                        totalLum += Beer(totalDensity,_Absorption);
-                        totalDensity+=density;
+                        lum*=density*l;
+                        totalLum += transmittance*Beer(totalDensity,_Absorption)*lum*phase*10;
+                        transmittance *= exp(-density*l);
+                        totalDensity+=density*l;
+                       
                         
                     }
                 }
-                return albedo+totalDensity;
+                float3 CloudColor = _BaseColor*totalLum;
+                return half4(backColor.xyz*transmittance+CloudColor,1);
     
             }
             ENDHLSL
