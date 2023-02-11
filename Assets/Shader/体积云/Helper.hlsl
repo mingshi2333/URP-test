@@ -82,6 +82,16 @@ float2 RayCloudLayerDst(float3 sphereCenter, float earthRadius, float heightMin,
     return float2(dstToCloudLayer, dstInCloudLayer);
 }
 
+//计算云位置
+/*float GetHeightFractionForPoint(float3 inPosition, float2 inCloudMinMax)
+{
+    // 计算云体中的位置
+    float height_fraction = (inPosition.z− inCloudMinMax.x) / (inCloudMinMax.y− inCloudMinMax.x);
+    return saturate(height_fraction);
+}*/
+
+//
+
 
 
 

@@ -20,13 +20,12 @@ public class VolumetricCloud: VolumeComponent, IPostProcessComponent{
     public Vector3Parameter densityNoiseOffset = new Vector3Parameter(Vector3.zero);
     [Tooltip("Blue")]
     public Texture2DParameter blueNoise = new Texture2DParameter(null);
+    [Tooltip("Scale")]public FloatParameter BlueNoiseAllScale = new FloatParameter(1f);
     [Tooltip("消光系数")] public FloatParameter Absorption = new FloatParameter(1.0f);
     [Tooltip("光的消光系数")] public FloatParameter LightAbsorption = new FloatParameter(1.0f);
     [Tooltip("包围盒最小值")] public Vector3Parameter Min = new Vector3Parameter(new Vector3(-10,-10,-10));
     [Tooltip("包围盒最大值")] public Vector3Parameter Max = new Vector3Parameter(new Vector3(10,10,10));
-    
-    [Tooltip("最大采样")]  public MinIntParameter RaymaychingCount = new MinIntParameter(1,1);
-
+  
 
 
 
@@ -42,7 +41,6 @@ public class VolumetricCloud: VolumeComponent, IPostProcessComponent{
         if(blueNoise != null){
             material.SetTexture("_Bluenoise", densityNoise.value);
         }
-        material.SetInt("_MaxRaymarchingcount",RaymaychingCount.value);
         material.SetVector("_DensityNoiseScale", densityNoiseScale.value);
         material.SetVector("_DensityNoiseOffset", densityNoiseOffset.value);
         material.SetFloat("_Absorption", Absorption.value);
@@ -50,5 +48,6 @@ public class VolumetricCloud: VolumeComponent, IPostProcessComponent{
         material.SetVector("_BoundBoxMin",Min.value);
         material.SetVector("_BoundBoxMax",Max.value);
         material.SetFloat("_DensityNoiseAllScale",densityNoiseAllScale.value);
+        material.SetFloat("_BlueNoiseAllScale",BlueNoiseAllScale.value);
     }
 }

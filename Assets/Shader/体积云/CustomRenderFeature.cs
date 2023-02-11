@@ -63,4 +63,5 @@ public class CustomRenderFeature: ScriptableRendererFeature{
         pass = new CustomRenderPass();
         pass.renderPassEvent = evt;
     }
+    
 }

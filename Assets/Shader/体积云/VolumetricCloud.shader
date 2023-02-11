@@ -39,6 +39,7 @@
             float3 _DensityNoiseScale;
             float3 _DensityNoiseOffset;
             float _DensityNoiseAllScale;
+            float _BlueNoiseAllScale;
             int _MaxRaymarchingcount;
 
             
@@ -96,10 +97,15 @@
                 float dstInsideBox = max(0, dstB - dstToBox);
                 return float2(dstToBox, dstInsideBox);
             }
+            float sampleShape(float3 position)
+            {
+                float3 uvw = position*_BlueNoiseAllScale;
+                return SAMPLE_TEXTURE3D(_DensityNoiseTex,sampler_DensityNoiseTex ,float3(uvw.x,0,uvw.z));
+            }
             float sampleDensity(float3 position){
                 float3 uvw = position * _DensityNoiseScale*_DensityNoiseAllScale + _DensityNoiseOffset;
-                float blue = SAMPLE_TEXTURE2D(_Bluenoise,sampler_Bluenoise,uvw.xz);
-                return SAMPLE_TEXTURE3D(_DensityNoiseTex,sampler_DensityNoiseTex ,uvw).r*blue;
+                float denty = sampleShape(position);
+                return SAMPLE_TEXTURE3D(_DensityNoiseTex,sampler_DensityNoiseTex ,uvw).r*denty;
             }
             float GetCurrentPositionLum(float3 currentPos)
             {
