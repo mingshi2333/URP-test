@@ -114,7 +114,7 @@
                 //float dstInsideBox = RayCloudLayerDst(float3(0,0,0),6371,1500,4500,currentPos,lightdir);
                 float marchLength = 0;
                 float totalDensity = 0;
-                float marchNumber = 20;
+                float marchNumber = 10;
 
                 float l = dstInsideBox/marchNumber;//临时长度
                 for(int march =0;march<=marchNumber;march++)
@@ -153,12 +153,12 @@
                 float totalLum=0;
                 float totalDensity = 0;
                 float transmittance =1;//光照衰减
-                float l = dstInsideBox/20;
+                float l = dstInsideBox/10;
                 float3 lightDir = normalize(_MainLightPosition);
                 //TODO:暴露参数
                 float phase = HenyeyGreenstein(dot(rayDir,lightDir),0);
                 float3 starpos = rayPosition+rayDir*dstToBox;
-                for(int march = 0;march<=20;march++)
+                for(int march = 0;march<=10;march++)
                 {
                     marchingLength+=l;
                     float3 currentPos = starpos+rayDir*marchingLength;

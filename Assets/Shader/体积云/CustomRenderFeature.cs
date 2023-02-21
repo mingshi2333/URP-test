@@ -11,14 +11,14 @@ public class CustomRenderFeature: ScriptableRendererFeature{
         private RenderTargetIdentifier sourceRT;
         private RenderTargetHandle tempRT;
 
-        public void Setup(Material material){
+        public void Setup(RTHandle sourse,Material material){
             
+            sourceRT = sourse;
             this.mat = material;
         }
 
         public override void OnCameraSetup(CommandBuffer cmd, ref RenderingData renderingData)
         {
-            sourceRT = renderingData.cameraData.renderer.cameraColorTargetHandle;
         }
 
         public override void Execute(ScriptableRenderContext ctx, ref RenderingData data){
@@ -55,7 +55,6 @@ public class CustomRenderFeature: ScriptableRendererFeature{
         if(matInstance == null){
             matInstance = CoreUtils.CreateEngineMaterial(shader);
         }
-        pass.Setup( matInstance);
         renderer.EnqueuePass(pass);
     }
     public override void Create(){
@@ -63,5 +62,9 @@ public class CustomRenderFeature: ScriptableRendererFeature{
         pass = new CustomRenderPass();
         pass.renderPassEvent = evt;
     }
-    
+
+    public override void SetupRenderPasses(ScriptableRenderer renderer, in RenderingData renderingData)
+    {
+        pass.Setup(renderer.cameraColorTargetHandle,matInstance);
+    }
 }

@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5040c334b79c45128acb73df5e68ab1a, type: 3}
   m_Name: CustomRenderFeature
   m_EditorClassIdentifier: 
-  m_Active: 1
+  m_Active: 0
   shader: {fileID: 4800000, guid: c463f4b4156f4d078c131a2216e04001, type: 3}
-  evt: 550
+  evt: 500
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -81,4 +81,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b5495f09a19ba864e961d11903d4c606, type: 3}
   m_Name: TAA
   m_EditorClassIdentifier: 
-  m_Active: 1
+  m_Active: 0
